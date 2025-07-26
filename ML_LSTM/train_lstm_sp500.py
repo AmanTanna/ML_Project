@@ -15,6 +15,9 @@ import torch.nn as nn
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import DataLoader, TensorDataset
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
+import matplotlib.pyplot as plt
 
 # ---------- MLflow Setup ---------- #
 # Set tracking URI to local directory
@@ -316,30 +319,77 @@ with mlflow.start_run() as run:
     pred_df = pd.DataFrame(
         {"date": test_dates, "actual_close": actual, "pred_close": inv}
     )
-    pred_df.to_parquet("predictions.parquet", index=False)
-    mlflow.log_artifact("predictions.parquet")
-
-    # log full model + scaler
-    model_data = {
-        "model_state": model.state_dict(),
-        "scaler": scaler,
-        "feature_cols": feature_cols,
-        "seq_len": seq
-    }
-    torch.save(model_data, "model.pt")
-    mlflow.log_artifact("model.pt")
     
-    # Log model with MLflow (autolog will handle this too)
-    input_example = X[val_end:val_end+1]
-    try:
-        mlflow.pytorch.log_model(
-            model, 
-            artifact_path="pytorch-model",
-            input_example=input_example
-        )
-        print("Model logged successfully to MLflow")
-    except Exception as e:
-        print(f"Warning: Could not log model to MLflow: {e}")
+    # Save both parquet and CSV
+    pred_df.to_parquet("predictions.parquet", index=False)
+    pred_df.to_csv("predictions.csv", index=False)
+    mlflow.log_artifact("predictions.parquet")
+    mlflow.log_artifact("predictions.csv")
+    
+    # Create visualization
+    plt.figure(figsize=(15, 8))
+    
+    # Plot actual vs predicted prices
+    plt.subplot(2, 1, 1)
+    plt.plot(test_dates, actual, label='Actual Close Price', color='blue', linewidth=2)
+    plt.plot(test_dates, inv, label='Predicted Close Price', color='red', linewidth=2, alpha=0.8)
+    plt.title('AAPL Stock Price: Actual vs Predicted', fontsize=14, fontweight='bold')
+    plt.xlabel('Date')
+    plt.ylabel('Close Price ($)')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.xticks(rotation=45)
+    
+    # Plot prediction error
+    plt.subplot(2, 1, 2)
+    error = actual - inv
+    plt.plot(test_dates, error, label='Prediction Error', color='green', linewidth=1)
+    plt.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+    plt.title('Prediction Error Over Time', fontsize=14, fontweight='bold')
+    plt.xlabel('Date')
+    plt.ylabel('Error ($)')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.xticks(rotation=45)
+    
+    plt.tight_layout()
+    plt.savefig("predictions_plot.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Create metrics summary plot
+    plt.figure(figsize=(12, 6))
+    
+    # Training metrics over time
+    epochs_range = range(1, len(mlflow.get_run(run.info.run_id).data.metrics) // 4 + 1)
+    
+    plt.subplot(1, 2, 1)
+    # Note: You'd need to collect these during training for a proper plot
+    # This is a simplified version
+    plt.bar(['Train Loss', 'Val MAE', 'Test RMSE', 'Test MAE'], 
+            [avg_train_loss, val_mae, test_rmse, test_mae],
+            color=['skyblue', 'lightcoral', 'lightgreen', 'orange'])
+    plt.title('Final Model Metrics', fontweight='bold')
+    plt.ylabel('Error Value')
+    plt.xticks(rotation=45)
+    
+    plt.subplot(1, 2, 2)
+    # Price-based metrics
+    plt.bar(['Price MAE ($)', 'Price MAPE (%)'], 
+            [price_mae, price_mape],
+            color=['purple', 'gold'])
+    plt.title('Price-based Performance', fontweight='bold')
+    plt.ylabel('Error Value')
+    
+    plt.tight_layout()
+    plt.savefig("metrics_summary.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Log visualizations
+    mlflow.log_artifact("predictions_plot.png")
+    mlflow.log_artifact("metrics_summary.png")
+    
+    print(f"Predictions saved to: predictions.csv and predictions.parquet")
+    print(f"Visualizations saved as: predictions_plot.png and metrics_summary.png")
 
 print("Training complete!")
 print(f"Check MLflow UI at: http://localhost:5000")
