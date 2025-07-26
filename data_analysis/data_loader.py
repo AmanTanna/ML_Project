@@ -218,12 +218,12 @@ def update_data_files():
         new_data = pd.concat(all_new_data, ignore_index=True)
         logging.info(f"Downloaded {len(new_data)} new records")
         
+        # Convert new_data date column to datetime (it's currently string from download_stock_data)
+        new_data['date'] = pd.to_datetime(new_data['date'])
+        
         # Combine with existing data
         if not existing_data.empty:
-            # Convert date columns to datetime for proper concatenation
-            existing_data['date'] = pd.to_datetime(existing_data['date'])
-            new_data['date'] = pd.to_datetime(new_data['date'])
-            
+            # existing_data['date'] is already datetime from above
             final_data = pd.concat([existing_data, new_data], ignore_index=True)
             
             # Remove duplicates based on date and symbol
@@ -234,7 +234,9 @@ def update_data_files():
         # Sort by date and symbol
         final_data = final_data.sort_values(['symbol', 'date']).reset_index(drop=True)
         
-        # Convert date back to string for CSV storage
+        # Convert date back to string for CSV storage - ensure it's datetime first
+        if final_data['date'].dtype != 'datetime64[ns]':
+            final_data['date'] = pd.to_datetime(final_data['date'])
         final_data['date'] = final_data['date'].dt.strftime('%Y-%m-%d')
         
         # Save files
@@ -245,6 +247,8 @@ def update_data_files():
         except Exception as e:
             logging.error(f"Error saving data files: {e}")
             return
+    else:
+        logging.warning("No new data was downloaded.")
     
     # Reset checkpoint after successful completion
     save_checkpoint(0, 0)
