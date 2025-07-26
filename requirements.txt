@@ -1,0 +1,29 @@
+pre-commit
+
+# --- Core LLM / RAG stack ---
+openai==1.97.1          # July 22 2025 release :contentReference[oaicite:0]{index=0}
+langchain==0.3.27       # July 24 2025 :contentReference[oaicite:1]{index=1}
+langchain-openai==0.3.28 # glue pkg for LangChain ↔ OpenAI :contentReference[oaicite:2]{index=2}
+langchain-community==0.3.27            # Chroma, BM25, etc. integrations :contentReference[oaicite:3]{index=3}
+chromadb==1.0.15        # July 2 2025 vector DB :contentReference[oaicite:4]{index=4}
+tiktoken>=0.6.0         # token counting for prompts
+
+# --- Deep‑learning / forecasting ---
+torch==2.4.0            # PyTorch 2.4 GA :contentReference[oaicite:5]{index=5}
+scikit-learn>=1.5.0     # data splits, metrics
+
+# --- Experiment tracking & observability ---
+mlflow==3.1.4           # July 23 2025 :contentReference[oaicite:6]{index=6}
+
+# --- Data wrangling & viz ---
+pandas>=2.2.0
+numpy>=1.26.0
+pyyaml>=6.0
+plotly>=5.22.0          # nice interactive charts in Streamlit
+
+# --- Front‑end ---
+streamlit>=1.35.0
+
+# --- Testing / lint (optional but handy) ---
+pytest>=8.0.0
+ruff>=0.4.0
