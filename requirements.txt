@@ -33,3 +33,4 @@ requests>=2.31.0      # for HTTP requests
 beautifulsoup4>=4.12.0 # for parsing HTML (e.g., Wikipedia
 lxml>=4.9.0          # for XML parsing (e.g., RSS feeds)
 certifi>=2024.12.1  # for SSL certificates
+nbformat>=5.9.0       # for Jupyter notebook compatibility
