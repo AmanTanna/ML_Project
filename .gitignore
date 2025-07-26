@@ -3,6 +3,5 @@ venv/
 data_analysis/stocks_data.csv
 data_analysis/stocks_data.parquet
 data_analysis/download_checkpoint.json
-
-
 mlruns
+*.html 
