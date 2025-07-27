@@ -8,3 +8,21 @@
 2025-07-27 17:48:34,243 - RAG_System - INFO - Initializing Raw Source Layer (Layer 1)
 2025-07-27 17:48:34,352 - RAG_System - INFO - SEC API connectivity verified (CIK for AAPL: 0000320193)
 2025-07-27 17:48:34,353 - RAG_System - INFO - Raw Source Layer initialization complete
+2025-07-27 17:57:30,666 - RAG_System - INFO - Inserted 14 metric definitions
+2025-07-27 17:57:30,668 - RAG_System - INFO - DuckDB initialized at /Users/jineshshah/Desktop/aman_proj/ML_Project/RAG/data/financial_data.duckdb
+2025-07-27 17:57:30,693 - RAG_System - ERROR - Error inserting metrics: Constraint Error: NOT NULL constraint failed: financial_metrics.id
+2025-07-27 17:57:30,693 - RAG_System - INFO - Parquet storage initialized at /Users/jineshshah/Desktop/aman_proj/ML_Project/RAG/data/parquet_store
+2025-07-27 17:57:30,829 - RAG_System - INFO - Stored 4 financial metrics in Parquet format
+2025-07-27 17:57:30,831 - RAG_System - INFO - DuckDB initialized at /Users/jineshshah/Desktop/aman_proj/ML_Project/RAG/data/financial_data.duckdb
+2025-07-27 17:57:30,831 - RAG_System - INFO - Parquet storage initialized at /Users/jineshshah/Desktop/aman_proj/ML_Project/RAG/data/parquet_store
+2025-07-27 17:57:30,831 - RAG_System - INFO - Structured Data Manager initialized
+2025-07-27 17:57:30,831 - RAG_System - INFO - Initializing Structured Data Layer (Layer 2)
+2025-07-27 17:57:30,832 - RAG_System - INFO - DuckDB initialized at /Users/jineshshah/Desktop/aman_proj/ML_Project/RAG/data/financial_data.duckdb
+2025-07-27 17:57:30,832 - RAG_System - INFO - Parquet storage initialized at /Users/jineshshah/Desktop/aman_proj/ML_Project/RAG/data/parquet_store
+2025-07-27 17:57:30,834 - RAG_System - INFO - DuckDB operational: 0 metrics
+2025-07-27 17:57:30,837 - RAG_System - INFO - Parquet storage operational: 1 files
+2025-07-27 17:57:30,837 - RAG_System - INFO - Structured Data Layer initialization complete
+2025-07-27 17:57:30,843 - RAG_System - INFO - DuckDB connection closed
+2025-07-27 17:57:30,843 - RAG_System - INFO - Layer 2 connections closed
+2025-07-27 17:57:30,849 - RAG_System - INFO - DuckDB connection closed
+2025-07-27 18:02:26,174 - RAG_System - INFO - StorageManager initialized
