@@ -139,6 +139,6 @@ MIT License
 
 ## ✨ Contributions
 
-Contributors:
-Aman Tanna
-Param Shah
+- Contributors:
+- Aman Tanna
+- Param Shah
