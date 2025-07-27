@@ -8,3 +8,6 @@ mlruns
 *.parquet
 *.csv
 *.json
+.DS_Store
+*.pt 
+*.png
