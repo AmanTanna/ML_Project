@@ -574,7 +574,7 @@ with mlflow.start_run() as run:
             'price_mape': price_mape,
             'direction_accuracy': direction_accuracy,
             'r2_score': price_r2,
-            'accuracy_within_2pct': threshold_2pct
+            'accuracy_within_5pct': threshold_5pct
         }
     }
     
@@ -617,7 +617,7 @@ with mlflow.start_run() as run:
     print(f"Price MAPE: {price_mape:.2f}%")
     print(f"Direction Accuracy: {direction_accuracy:.2f}%")
     print(f"R² Score: {price_r2:.3f}")
-    print(f"Predictions within 2%: {threshold_2pct:.1f}%")
+    print(f"Predictions within 5%: {threshold_5pct:.1f}%")
     print(f"Mean Absolute Error: ${price_mae:.2f}")
     print("="*60)
 
