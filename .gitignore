@@ -5,6 +5,9 @@ data_analysis/stocks_data.parquet
 data_analysis/download_checkpoint.json
 mlruns
 *.html 
-.parquet
+*.parquet
 *.csv
 *.json
+.DS_Store
+*.pt 
+*.png
