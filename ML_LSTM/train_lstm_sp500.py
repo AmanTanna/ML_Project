@@ -37,6 +37,7 @@ mlflow.pytorch.autolog(
 # ---------- 0. CLI ---------- #
 p = argparse.ArgumentParser()
 p.add_argument("--file", default="../data_analysis/stocks_data.parquet")
+p.add_argument("--symbols", nargs="+", default=["AAPL"], help="List of stock symbols to train on")
 p.add_argument("--seq_len", type=int, default=40)
 p.add_argument("--hidden", type=int, default=128)
 p.add_argument("--layers", type=int, default=2)
@@ -93,8 +94,11 @@ def load_prices(path: str) -> pd.DataFrame:
         symbols = df["symbol"].unique()
         print(f"Found {len(symbols)} symbols: {symbols[:10]}...")  # Show first 10
         # Use AAPL as example - you can change this
-        df = df[df["symbol"] == "AAPL"].copy()
-        print(f"Using AAPL data: {len(df)} rows")
+        required_symbols = args.symbols
+        df = df[df["symbol"].isin(required_symbols)].copy()
+        print(f"Filtered to {len(df)} rows for symbols: {required_symbols}")
+    else:
+        print("No 'symbol' column found, assuming single symbol data")
     
     df = df.sort_index()
 
@@ -145,13 +149,16 @@ scaled = scaler.fit_transform(df[feature_cols])
 
 seq = args.seq_len
 X, y = [], []
-for i in range(len(scaled) - seq):
-    X.append(scaled[i : i + seq])
-    # predict next close price (index 0 in feature vector)
-    y.append(scaled[i + seq, 0])
-X, y = np.array(X, dtype=np.float32), np.array(y, dtype=np.float32).reshape(-1, 1)
 
-print(f"Created {len(X)} sequences of length {seq}")
+for symbol, df_group in df.groupby("symbol"):
+    print(f"Creating sequences for symbol: {symbol}")
+    scaled = scaler.fit_transform(df_group[feature_cols])
+    for i in range(len(scaled) - seq):
+        X.append(scaled[i : i + seq])
+        y.append(scaled[i + seq, 0])
+
+X, y = np.array(X, dtype=np.float32), np.array(y, dtype=np.float32).reshape(-1, 1)
+print(f"Created {len(X)} total sequences from all symbols")
 
 # train 70 %, val 15 %, test 15 %
 n = len(X)
@@ -276,6 +283,7 @@ with mlflow.start_run() as run:
 
     # ---------- 5. Test set & artefacts ---------- #
     print("Evaluating on test set...")
+    required_symbols = args.symbols if args.symbols else ["AAPL"]
     model.load_state_dict(torch.load("best.pt", weights_only=True))
     model.eval()
     test_pred, test_true = [], []
@@ -327,33 +335,79 @@ with mlflow.start_run() as run:
     mlflow.log_artifact("predictions.csv")
     
     # Create visualization
-    plt.figure(figsize=(15, 8))
+    # Group test predictions and actuals by symbol
+print("Generating visualizations per symbol...")
+
+for symbol in required_symbols:
     
-    # Plot actual vs predicted prices
-    plt.subplot(2, 1, 1)
-    plt.plot(test_dates, actual, label='Actual Close Price', color='blue', linewidth=2)
-    plt.plot(test_dates, inv, label='Predicted Close Price', color='red', linewidth=2, alpha=0.8)
-    plt.title('AAPL Stock Price: Actual vs Predicted', fontsize=14, fontweight='bold')
-    plt.xlabel('Date')
-    plt.ylabel('Close Price ($)')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
+    print(f"Plotting results for symbol: {symbol}")
+    df_symbol = df[df["symbol"] == symbol].copy()
+    df_symbol = df_symbol.sort_index()
+    
+    # Recreate and scale symbol-specific data
+    df_symbol["return"] = df_symbol["close"].pct_change()
+    df_symbol["sma20"] = df_symbol["close"].rolling(20).mean()
+    df_symbol["momentum10"] = df_symbol["close"] / df_symbol["close"].shift(10) - 1
+    df_symbol = df_symbol.dropna()
+    
+    # Scale and generate predictions again for this symbol only
+    scaled = scaler.transform(df_symbol[feature_cols])
+    X_sym, y_sym = [], []
+    for i in range(len(scaled) - args.seq_len):
+        X_sym.append(scaled[i:i+args.seq_len])
+        y_sym.append(scaled[i+args.seq_len, 0])
+    X_sym = np.array(X_sym, dtype=np.float32)
+    y_sym = np.array(y_sym, dtype=np.float32).reshape(-1, 1)
+    
+    model.eval()
+    with torch.no_grad():
+        sym_pred = model(torch.tensor(X_sym).to(device)).cpu().numpy()
+    
+    # Inverse scale
+    inv_sym = scaler.inverse_transform(
+        np.hstack([sym_pred, np.zeros((len(sym_pred), len(feature_cols) - 1))])
+    )[:, 0]
+    actual_sym = scaler.inverse_transform(
+        np.hstack([y_sym, np.zeros((len(y_sym), len(feature_cols) - 1))])
+    )[:, 0]
+    
+    test_dates = df_symbol.index[-len(actual_sym):]
+    
+    # Plot 3 subplots
+    fig, axs = plt.subplots(3, 1, figsize=(15, 10), sharex=True)
+    
+    axs[0].plot(test_dates, actual_sym, label="Actual", color='blue')
+    axs[0].plot(test_dates, inv_sym, label="Predicted", color='red')
+    axs[0].set_title(f"{symbol} - Actual vs Predicted Close Price")
+    axs[0].set_ylabel("Close Price ($)")
+    axs[0].legend()
+    axs[0].grid(True)
+    
+    error = actual_sym - inv_sym
+    axs[1].plot(test_dates, error, color='green', label="Prediction Error")
+    axs[1].axhline(0, linestyle='--', color='black', alpha=0.5)
+    axs[1].set_title(f"{symbol} - Prediction Error ($)")
+    axs[1].set_ylabel("Error ($)")
+    axs[1].legend()
+    axs[1].grid(True)
+    
+    perc_error = (actual_sym - inv_sym) / actual_sym * 100
+    axs[2].plot(test_dates, perc_error, color='purple', label="Percentage Error")
+    axs[2].axhline(0, linestyle='--', color='black', alpha=0.5)
+    axs[2].set_title(f"{symbol} - Prediction Error (%)")
+    axs[2].set_ylabel("Error (%)")
+    axs[2].set_xlabel("Date")
+    axs[2].legend()
+    axs[2].grid(True)
     plt.xticks(rotation=45)
     
-    # Plot prediction error
-    plt.subplot(2, 1, 2)
-    error = actual - inv
-    plt.plot(test_dates, error, label='Prediction Error', color='green', linewidth=1)
-    plt.axhline(y=0, color='black', linestyle='--', alpha=0.5)
-    plt.title('Prediction Error Over Time', fontsize=14, fontweight='bold')
-    plt.xlabel('Date')
-    plt.ylabel('Error ($)')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.xticks(rotation=45)
-    
-    plt.tight_layout()
-    plt.savefig("predictions_plot.png", dpi=300, bbox_inches='tight')
+    fig.tight_layout()
+    filename = f"{symbol}_prediction_charts.png"
+    plt.savefig(filename, dpi=300)
+    plt.close()
+    mlflow.log_artifact(filename)
+    print(f"Saved plot: {filename}")
+
     plt.close()
     
     # Create metrics summary plot
