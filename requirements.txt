@@ -42,10 +42,6 @@ duckdb>=0.9.0         # for columnar data queries
 faiss-cpu>=1.7.4      # for vector similarity search
 sentence-transformers>=2.2.2  # for text embeddings
 pypdf2>=3.0.0         # for PDF text extraction
-python-edgar>=3.0.0   # for SEC EDGAR API
-xbrl>=1.0.0           # for XBRL parsing
-uuid>=1.30            # for unique identifiers
-pathlib>=1.0.0        # for path handling
 tqdm>=4.65.0          # for progress bars
 jsonlines>=3.1.0      # for JSONL file handling
 
