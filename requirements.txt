@@ -35,5 +35,17 @@ lxml>=4.9.0          # for XML parsing (e.g., RSS feeds)
 certifi>=2024.12.1  # for SSL certificates
 urllib3<2.0
 nbformat>=5.9.0       # for Jupyter notebook compatibility
-pyarrow>=5.0.0
+
+# --- RAG System Dependencies ---
+pyarrow>=5.0.0        # for Parquet storage
+duckdb>=0.9.0         # for columnar data queries
+faiss-cpu>=1.7.4      # for vector similarity search
+sentence-transformers>=2.2.2  # for text embeddings
+pypdf2>=3.0.0         # for PDF text extraction
+python-edgar>=3.0.0   # for SEC EDGAR API
+xbrl>=1.0.0           # for XBRL parsing
+uuid>=1.30            # for unique identifiers
+pathlib>=1.0.0        # for path handling
+tqdm>=4.65.0          # for progress bars
+jsonlines>=3.1.0      # for JSONL file handling
 
