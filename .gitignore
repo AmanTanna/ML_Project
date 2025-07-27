@@ -11,3 +11,4 @@ mlruns
 .DS_Store
 *.pt 
 *.png
+*.txt
