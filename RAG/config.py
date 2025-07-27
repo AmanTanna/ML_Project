@@ -21,6 +21,7 @@ class RAGConfig:
     # Layer 1: Raw Source Storage
     RAW_PDFS_DIR: Path = DATA_DIR / "raw_pdfs"
     MANIFEST_FILE: Path = DATA_DIR / "manifest.jsonl"
+    FILING_REGISTRY_FILE: Path = DATA_DIR / "filing_registry.json"
     
     # Layer 2: Structured & Numeric Storage  
     PARQUET_DIR: Path = DATA_DIR / "parquet_store"
