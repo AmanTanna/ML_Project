@@ -20,6 +20,7 @@ class RAGConfig:
     
     # Layer 1: Raw Source Storage
     RAW_PDFS_DIR: Path = DATA_DIR / "raw_pdfs"
+    RAW_DATA_PATH: Path = DATA_DIR / "raw_pdfs"  # Compatibility alias
     MANIFEST_FILE: Path = DATA_DIR / "manifest.jsonl"
     FILING_REGISTRY_FILE: Path = DATA_DIR / "filing_registry.json"
     
@@ -46,6 +47,16 @@ class RAGConfig:
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     EMBEDDING_DIMENSION: int = 384
     VECTOR_INDEX_TYPE: str = "IVF4096,Flat"  # FAISS index type
+    
+    # FAISS Configuration
+    FAISS_INDEX_TYPE: str = "flat"  # flat, ivf_flat, ivf_pq, hnsw
+    USE_GPU_FOR_FAISS: bool = False
+    FAISS_NLIST: int = 100  # Number of clusters for IVF indices
+    FAISS_NPROBE: int = 10  # Number of clusters to search
+    
+    # Search Configuration
+    SEARCH_CACHE_SIZE: int = 100
+    DEFAULT_SEARCH_K: int = 10
     
     # S&P 500 Configuration
     SP500_YEARS: List[int] = field(default_factory=lambda: [2020, 2021, 2022, 2023, 2024])
