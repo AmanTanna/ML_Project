@@ -358,7 +358,7 @@ async def health_check():
                 status = "degraded"
         else:
             components['query_engine'] = {
-                'status': 'unavailable',
+                'status': 'unhealthy',
                 'details': 'Query manager not initialized'
             }
             issues.append("Query engine not available")
